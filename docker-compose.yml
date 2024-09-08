@@ -41,8 +41,6 @@
 # volumes:
 #   postgres_data:
 
-version: '3.8'
-
 services:
   nginx:
     image: nginx:latest
@@ -60,8 +58,8 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
-    expose:
-      - "3000"
+    ports:
+      - "3000:3000"  # Expone el puerto 3000
     depends_on:
       db:
         condition: service_healthy
