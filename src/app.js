@@ -25,6 +25,12 @@ const pool = new Pool({
 app.use(bodyParser.json());
 app.use(cookieParser());
 
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://cocinasitinerantes.com'],
+  credentials: true
+}));
+
+
 // Rutas
 app.use("/auth", authRoutes);
 
