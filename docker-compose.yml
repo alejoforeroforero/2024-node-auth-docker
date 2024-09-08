@@ -1,0 +1,31 @@
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db
+      - DB_USER=testuser
+      - DB_PASSWORD=testpassword
+      - DB_NAME=testdb
+      - DB_PORT=5432
+      - ACCESS_TOKEN_SECRET=7579f405cf70931f41c95494171b24267dd3486ea28eefeb89033cbae4731b6c77023fbadfd487b97efd51759fed8214b37fb3e9f98e46fc432f988606d1453c
+      - REFRESH_TOKEN_SECRET=4b74af8825c2ce2d1338f459762c68c295c084a2371ef4f5d59d797740a21992ce36e1921937225f4cb5d0b26ab02962b6e3073370c4b169f8fae089f6370a41
+      - PORT=3000
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=testuser
+      - POSTGRES_PASSWORD=testpassword
+      - POSTGRES_DB=testdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    
+volumes:
+  postgres_data:
