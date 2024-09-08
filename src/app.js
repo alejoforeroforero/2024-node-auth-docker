@@ -10,6 +10,8 @@ const authRoutes = require("./routes/authRoutes");
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.set("trust proxy", 1);
+
 // Configuración de la base de datos
 const pool = new Pool({
   user: process.env.DB_USER,
@@ -37,9 +39,39 @@ pool.query("SELECT NOW()", (err, res) => {
   // No cerramos el pool aquí para que esté disponible para las rutas
 });
 
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send("Something broke!");
+});
+
+// Manejo de excepciones no capturadas
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  // Aplicación específica: decidir si cerrar el servidor en este caso
+});
+
+process.on("SIGTERM", () => {
+  console.info("SIGTERM signal received.");
+  console.log("Closing http server.");
+  server.close(() => {
+    console.log("Http server closed.");
+    // Cerrar conexiones de base de datos, etc.
+    pool.end(() => {
+      console.log("Database connections closed.");
+      process.exit(0);
+    });
+  });
+});
+
 // Iniciar el servidor
-app.listen(port, () => {
-  console.log(`Servidor corriendo en http://localhost:${port}`);
+
+app.listen(port, "0.0.0.0", () => {
+  console.log(`Server is running on port ${port}`);
 });
 
 // Exportar el pool para usarlo en otros archivos

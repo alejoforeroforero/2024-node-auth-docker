@@ -1,10 +1,67 @@
+# services:
+#   app:
+#     build: 
+#       context: .
+#       dockerfile: Dockerfile
+#     ports:
+#       - "${PORT:-3000}:3000"
+#     depends_on:
+#       db:
+#         condition: service_healthy
+#     environment:
+#       - NODE_ENV=${NODE_ENV:-production}
+#       - DB_HOST=db
+#       - DB_USER=${DB_USER}
+#       - DB_PASSWORD=${DB_PASSWORD}
+#       - DB_NAME=${DB_NAME}
+#       - DB_PORT=${DB_PORT:-5432}
+#       - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
+#       - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+#       - PORT=${PORT:-3000}
+#     restart: unless-stopped
+
+#   db:
+#     image: postgres:13
+#     environment:
+#       - POSTGRES_USER=${DB_USER}
+#       - POSTGRES_PASSWORD=${DB_PASSWORD}
+#       - POSTGRES_DB=${DB_NAME}
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#       - ./migrations:/docker-entrypoint-initdb.d
+#     ports:
+#       - "${DB_PORT:-5432}:5432"
+#     healthcheck:
+#       test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+#     restart: unless-stopped
+
+# volumes:
+#   postgres_data:
+
+version: '3.8'
+
 services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+
   app:
     build: 
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "${PORT:-3000}:3000"
+    expose:
+      - "3000"
     depends_on:
       db:
         condition: service_healthy
@@ -17,7 +74,7 @@ services:
       - DB_PORT=${DB_PORT:-5432}
       - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
       - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
-      - PORT=${PORT:-3000}
+      - PORT=3000
     restart: unless-stopped
 
   db:
@@ -29,8 +86,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./migrations:/docker-entrypoint-initdb.d
-    ports:
-      - "${DB_PORT:-5432}:5432"
+    expose:
+      - "5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
       interval: 10s
