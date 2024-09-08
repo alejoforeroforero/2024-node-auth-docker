@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require('cors');
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 require("dotenv").config();
@@ -24,6 +25,11 @@ const pool = new Pool({
 // Middleware
 app.use(bodyParser.json());
 app.use(cookieParser());
+
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://cocinasitinerantes.com'],
+  credentials: true
+}));
 
 // Rutas
 app.use("/auth", authRoutes);
