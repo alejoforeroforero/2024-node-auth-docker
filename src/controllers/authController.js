@@ -11,12 +11,15 @@ async function register(req, res) {
       [email, hashedPassword]
     );
     res.status(201).json({
-      message: "Usuario registrado exitosamente",
-      userId: result.rows[0].id,
+      message:
+        "Usuario registrado exitosamente, ya puedes hacer login en la applicación",
     });
   } catch (error) {
     console.error("Error al registrar usuario:", error);
-    res.status(500).json({ error: "Error al registrar usuario" });
+    res.status(500).json({
+      error: "Error al registrar usuario, es probable que el \n"+
+          "usuario ya exista en nuestra base de datos",
+    });
   }
 }
 
@@ -40,11 +43,11 @@ async function login(req, res) {
         });
 
         const userInfo = {
-          first_name:user.first_name,
+          first_name: user.first_name,
           email: user.email,
         };
 
-        res.json({ userInfo, accessToken });
+        res.status(200).json({ userInfo, accessToken });
       } else {
         res.status(400).json({ error: "Contraseña incorrecta" });
       }
@@ -61,7 +64,7 @@ function generateAccessToken(user) {
   return jwt.sign(
     { id: user.id, email: user.email },
     process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: "15m" }
+    { expiresIn: "30s" }
   );
 }
 
@@ -107,7 +110,9 @@ function logout(req, res) {
 
 async function getUsers(req, res) {
   try {
-    const result = await pool.query("SELECT id, email FROM usuarios");
+    const result = await pool.query(
+      "SELECT id, email, first_name FROM usuarios"
+    );
     res.json(result.rows);
   } catch (error) {
     console.error("Error al obtener usuarios:", error);
@@ -130,14 +135,16 @@ async function updateUser(req, res) {
   try {
     const result = await pool.query(
       "UPDATE usuarios SET " +
-      Object.keys(updateFields).map((key, i) => `${key} = $${i + 2}`).join(", ") +
-      " WHERE email = $1 RETURNING *",
+        Object.keys(updateFields)
+          .map((key, i) => `${key} = $${i + 2}`)
+          .join(", ") +
+        " WHERE email = $1 RETURNING *",
       [email, ...Object.values(updateFields)]
     );
 
     if (result.rows.length > 0) {
       const updatedUser = result.rows[0];
-      res.json({ msg: 'User updated', user: updatedUser });
+      res.json({ msg: "User updated", user: updatedUser });
     } else {
       res.status(404).json({ error: "Usuario no encontrado" });
     }

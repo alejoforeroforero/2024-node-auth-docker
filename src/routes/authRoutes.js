@@ -21,7 +21,6 @@ router.get("/info", getUsers);
 
 router.get("/refresh-token", refreshAccessToken);
 
-
 router.get("/verify-auth", authenticateToken, verifyAuth);
 router.put("/update-user", authenticateToken, updateUser);
 
