@@ -35,11 +35,12 @@ async function login(req, res) {
 
         res.cookie("refreshToken", refreshToken, {
           httpOnly: true,
-          //sameSite: "strict",
+          sameSite: "strict",
           // secure: true // Habilitar en producción con HTTPS
         });
 
         const userInfo = {
+          first_name:user.first_name,
           email: user.email,
         };
 
@@ -123,6 +124,29 @@ const verifyAuth = (req, res) => {
   });
 };
 
+async function updateUser(req, res) {
+  const { email, ...updateFields } = req.body;
+
+  try {
+    const result = await pool.query(
+      "UPDATE usuarios SET " +
+      Object.keys(updateFields).map((key, i) => `${key} = $${i + 2}`).join(", ") +
+      " WHERE email = $1 RETURNING *",
+      [email, ...Object.values(updateFields)]
+    );
+
+    if (result.rows.length > 0) {
+      const updatedUser = result.rows[0];
+      res.json({ msg: 'User updated', user: updatedUser });
+    } else {
+      res.status(404).json({ error: "Usuario no encontrado" });
+    }
+  } catch (error) {
+    console.error("Error al actualizar usuario:", error);
+    res.status(500).json({ error: "Error al actualizar usuario" });
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -131,4 +155,5 @@ module.exports = {
   getUsers,
   verifyAuth,
   refreshAccessToken,
+  updateUser,
 };
