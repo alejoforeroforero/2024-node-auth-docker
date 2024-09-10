@@ -3,7 +3,6 @@ const jwt = require("jsonwebtoken");
 const pool = require("../config/database");
 
 async function register(req, res) {
-  console.log("register");
   const { email, password } = req.body;
   try {
     const hashedPassword = await argon2.hash(password);
@@ -36,7 +35,7 @@ async function login(req, res) {
 
         res.cookie("refreshToken", refreshToken, {
           httpOnly: true,
-          sameSite: "strict",
+          //sameSite: "strict",
           // secure: true // Habilitar en producción con HTTPS
         });
 
