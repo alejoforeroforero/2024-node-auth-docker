@@ -6,8 +6,10 @@ const {
   refreshToken,
   logout,
   getUsers,
+  verifyAuth,
+  refreshAccessToken
 } = require("../controllers/authController");
-const { authenticateToken } = require("../middleware/authMiddleware");
+const { authenticateToken} = require("../middleware/authMiddleware");
 
 router.post("/register", register);
 router.post("/login", login);
@@ -15,6 +17,9 @@ router.post("/token", refreshToken);
 router.post("/logout", logout);
 
 router.get("/info", getUsers);
+
+router.get("/refresh-token", refreshAccessToken);
+router.get("/verify-auth", authenticateToken, verifyAuth);
 
 // Ruta protegida de ejemplo
 router.get("/protected", authenticateToken, (req, res) => {

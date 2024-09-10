@@ -27,7 +27,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://cocinasitinerantes.com'],
+  origin: [process.env.HOST1, process.env.HOST2],
   credentials: true
 }));
 
